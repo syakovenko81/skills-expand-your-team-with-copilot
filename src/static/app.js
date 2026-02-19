@@ -569,6 +569,21 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="social-share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-button facebook" data-activity="${name}" data-platform="facebook" title="Share on Facebook">
+          <span>f</span>
+        </button>
+        <button class="share-button twitter" data-activity="${name}" data-platform="twitter" title="Share on Twitter">
+          <span>𝕏</span>
+        </button>
+        <button class="share-button email" data-activity="${name}" data-platform="email" title="Share via Email">
+          <span>✉</span>
+        </button>
+        <button class="share-button copy" data-activity="${name}" data-platform="copy" title="Copy Link">
+          <span>🔗</span>
+        </button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -586,6 +601,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for social share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        handleShare(name, details, button.dataset.platform);
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -797,6 +820,48 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     );
+  }
+
+  // Handle social sharing
+  function handleShare(activityName, activityDetails, platform) {
+    // Create the share URL (current page URL with activity in hash)
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${baseUrl}#activity=${encodeURIComponent(activityName)}`;
+    
+    // Create share text
+    const shareText = `Check out ${activityName} at Mergington High School! ${activityDetails.description}`;
+    const shareTitle = `Join ${activityName}`;
+
+    switch (platform) {
+      case 'facebook':
+        // Facebook share dialog
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        window.open(facebookUrl, '_blank', 'width=600,height=400');
+        break;
+
+      case 'twitter':
+        // Twitter share dialog
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, '_blank', 'width=600,height=400');
+        break;
+
+      case 'email':
+        // Email share
+        const emailSubject = encodeURIComponent(shareTitle);
+        const emailBody = encodeURIComponent(`${shareText}\n\nView details: ${shareUrl}`);
+        window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+        break;
+
+      case 'copy':
+        // Copy link to clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          showMessage('Link copied to clipboard!', 'success');
+        }).catch(err => {
+          console.error('Failed to copy link:', err);
+          showMessage('Failed to copy link. Please try again.', 'error');
+        });
+        break;
+    }
   }
 
   // Show message function
